@@ -43,99 +43,53 @@ class Image {
 class App extends Component {
   constructor(props) {
     super(props);
-
-    this.img2 = new Image(
-      "https://uploads.codesandbox.io/uploads/user/b082e46e-e20c-4323-a8fd-973177bfd7a9/HgNz-img2.png",
-      849,
-      569
-    );
+    this.arImage = [];
+    for(var i=0; i<4; i++) {
+        this.arImage.push(
+          new Image(
+            `/img${i}.png`,
+            849,
+            569
+          )
+        )
+    }
 
     this.state = {
-      scale: 0,
-      img1: new Image(
-        "https://uploads.codesandbox.io/uploads/user/b082e46e-e20c-4323-a8fd-973177bfd7a9/aOvY-img1.png",
-        808,
-        539
-      ),
-      img2: this.img2,
-      opacity: 100
+      arImage: this.arImage
     };
   }
-
-  handleOpacityChange = e => {
-    this.setState({ opacity: e.target.value });
+  maxImage = 4;
+  handleAdd = e => {
+    const img= this.state.arImage;
+    console.log(img.length);
+    if(img.length<this.maxImage)
+    img.push(
+      new Image(
+        `/img${img.length}.png`,
+        849,
+        569
+      )
+    );
+    this.setState({ arImage: img });
   };
 
-  handleOffsetClick = e => {
-    const img = this.state.img1;
-    var x = img.offset.x;
-    var y = img.offset.y;
-    switch (e.target.value) {
-      case "top":
-        y += 1;
-        break;
-      case "bottom":
-        y -= 1;
-        break;
-      case "right":
-        x += 1;
-        break;
-      case "left":
-        x -= 1;
-        break;
-      default:
-    }
-    img.setOffset(x, y);
-    this.setState({ img1: img });
-  };
-
-  handleScaleChange = e => {
-    const positive = e.target.value >= 0;
-    const value = Math.sqrt(Math.pow(e.target.value, 2)) / 100;
-    const scale = positive ? value + 1 : 1 - value;
-
-    this.state.img2.setScale(scale);
-
-    this.setState({
-      scale: e.target.value
-    });
+  handleRemove = e => {
+    const img= this.state.arImage;
+    if(img.length>0)
+    img.pop();
+    console.log(img);
+    this.setState({ arImage: img });
   };
 
   render() {
     return (
       <div>
-        scale:
-        <input
-          type="number"
-          value={this.state.scale}
-          min={-100}
-          max={100}
-          onChange={this.handleScaleChange}
-        />
-        opacity:
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={this.state.opacity}
-          onChange={this.handleOpacityChange}
-        />
-        <button value="top" onClick={this.handleOffsetClick}>
-          top
+        <button value="add" onClick={this.handleAdd}>
+          ADD
         </button>
-        <button value="bottom" onClick={this.handleOffsetClick}>
-          bottom
+        <button value="remove" onClick={this.handleRemove}>
+          Remove
         </button>
-        <button value="left" onClick={this.handleOffsetClick}>
-          left
-        </button>
-        <button value="right" onClick={this.handleOffsetClick}>
-          right
-        </button>
-        <input
-          type="text"
-          value={this.state.img1.offset.x + "x" + this.state.img1.offset.y}
-        />
         <Map
           crs={L.CRS.Simple}
           zoom={0}
@@ -143,17 +97,15 @@ class App extends Component {
           zoomControl={true}
           zoomSnap={0}
         >
-          <ImageOverlay
-            url={this.state.img2.url}
-            bounds={this.state.img2.getBounds()}
-            corners={this.state.corners}
-            opacity={this.state.opacity / 100}
-          />
-          <ImageOverlay
-            url={this.state.img1.url}
-            bounds={this.state.img1.getBounds()}
-            opacity={this.state.opacity / 100}
-          />
+          {this.state.arImage.map(function(value,i){
+        return <ImageOverlay 
+        key={i.toString()}
+        url={value.url}
+            bounds={value.getBounds()}
+            corners={value.corners}
+            opacity={value.opacity / 100}
+        />;
+    })}
           <MagnifyingGlassControl zoomOffset={1} />
         </Map>
       </div>
